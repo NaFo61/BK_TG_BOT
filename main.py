@@ -1,3 +1,4 @@
+from config_data.config import ADMIN_LIST
 from loader import bot
 
 from telebot import types
@@ -9,8 +10,25 @@ from texts.texts import *
 
 my_state = MyStates()
 
+blocked_users: dict = {}
+blocked_users.setdefault(6554422345, {'acces_to_command': False})
+print(blocked_users)
 
-@bot.message_handler(commands=['start'])
+
+def check_acces_to_command(user_id) -> bool:
+    if check_in_users(user_id) is True:
+        if blocked_users[user_id]['acces_to_command'] is False:
+            return False
+    return True
+
+
+def check_in_users(user_id) -> bool:
+    if user_id in blocked_users:
+        return True
+    return False
+
+
+@bot.message_handler(commands=['start'], func=lambda msg: check_acces_to_command(msg.from_user.id))
 def start_handler(message: Message):
     chat_id = message.chat.id
     telegram_id = message.from_user.id
@@ -23,15 +41,16 @@ def start_handler(message: Message):
     btn_1 = types.KeyboardButton(START_MARKUP_BTN_1)
     btn_2 = types.KeyboardButton(START_MARKUP_BTN_2)
     btn_3 = types.KeyboardButton(START_MARKUP_BTN_3)
-    markup.add(btn_1)
-    markup.add(btn_2)
-    markup.add(btn_3)
+    btn_4 = types.KeyboardButton(START_MARKUP_BTN_4)
+    markup.add(btn_1, btn_2)
+    markup.add(btn_3, btn_4)
 
+    bot.send_sticker(chat_id, sticker=START_STICKER)
     mes = MESSAGE_START.format(name_user=telegram_name)
     bot.send_message(chat_id, mes, reply_markup=markup)
 
 
-@bot.message_handler(commands=['help'])
+@bot.message_handler(commands=['help'], func=lambda msg: check_acces_to_command(msg.from_user.id))
 def help_handler(message: Message):
     chat_id = message.chat.id
 
@@ -44,16 +63,109 @@ def help_handler(message: Message):
     markup.add(btn_2)
     markup.add(btn_3)
     markup.add(btn_4)
+    bot.send_sticker(chat_id, HELP_STICKER)
     bot.send_message(chat_id, MESSAGE_HELP, reply_markup=markup)
 
 
-@bot.message_handler(content_types=['text'])
+@bot.message_handler(commands=["admin"])
+def admin_handler(message: Message):
+    chat_id = message.chat.id
+    user_id = message.from_user.id
+    if user_id in ADMIN_LIST:
+        bot.send_message(chat_id, ADMIN_SUCCESS)
+        markup = types.InlineKeyboardMarkup()
+        btn_1 = types.InlineKeyboardButton(ADMIN_MARKUP_BTN_1, callback_data="rasulka")
+        btn_2 = types.InlineKeyboardButton(ADMIN_MARKUP_BTN_2, callback_data="ban")
+        btn_3 = types.InlineKeyboardButton(ADMIN_MARKUP_BTN_3, callback_data="unban")
+        btn_4 = types.InlineKeyboardButton(ADMIN_MARKUP_BTN_4, callback_data="balance")
+        btn_5 = types.InlineKeyboardButton(ADMIN_MARKUP_BTN_5, callback_data="give_test_period")
+        btn_6 = types.InlineKeyboardButton(ADMIN_MARKUP_BTN_6, callback_data="get_stat")
+        markup.add(btn_1)
+        markup.add(btn_2, btn_3)
+        markup.add(btn_4, btn_5)
+        markup.add(btn_6)
+        bot.send_message(chat_id, ADMIN_CHOOSE_FUNC, reply_markup=markup)
+    else:
+        bot.send_message(chat_id, ADMIN_DENIED)
+
+
+@bot.callback_query_handler(func=lambda call: call.data == "rasulka")
+def call_rasulka(call):
+    call_back = call.data
+    print(call)
+    print(call_back)
+    message = call.message
+    chat_id = message.chat.id
+    bot.send_message(chat_id, ADMIN_MARKUP_BTN_1)
+
+
+@bot.callback_query_handler(func=lambda call: call.data == "ban")
+def call_ban(call):
+    call_back = call.data
+    message = call.message
+    chat_id = message.chat.id
+    msg = bot.send_message(chat_id, ADMIN_MARKUP_BTN_2)
+    bot.register_next_step_handler(msg, ban)
+
+
+def ban(message: Message):
+    chat_id = message.chat.id
+    who = message.text
+    print(blocked_users)
+    if int(who) in blocked_users.keys():
+        bot.send_message(chat_id, ALREADY_IN_BAN.format(who=who))
+    else:
+        blocked_users.setdefault(int(who), {'acces_to_command': False})
+        bot.send_message(chat_id, USER_ADDED_IN_BAN.format(who=who))
+
+
+@bot.callback_query_handler(func=lambda call: call.data == "unban")
+def call_unban(call):
+    call_back = call.data
+    message = call.message
+    chat_id = message.chat.id
+    bot.send_message(chat_id, ADMIN_MARKUP_BTN_3)
+
+
+@bot.callback_query_handler(func=lambda call: call.data == "balance")
+def call_rasulka(call):
+    call_back = call.data
+    print(call)
+    print(call_back)
+    message = call.message
+    chat_id = message.chat.id
+    bot.send_message(chat_id, ADMIN_MARKUP_BTN_4)
+
+
+@bot.callback_query_handler(func=lambda call: call.data == "give_test_period")
+def call_rasulka(call):
+    call_back = call.data
+    print(call)
+    print(call_back)
+    message = call.message
+    chat_id = message.chat.id
+    bot.send_message(chat_id, ADMIN_MARKUP_BTN_5)
+
+
+@bot.callback_query_handler(func=lambda call: call.data == "get_stat")
+def call_rasulka(call):
+    call_back = call.data
+    print(call)
+    print(call_back)
+    message = call.message
+    chat_id = message.chat.id
+    bot.send_message(chat_id, ADMIN_MARKUP_BTN_6)
+
+
+@bot.message_handler(content_types=['text'], func=lambda msg: check_acces_to_command(msg.from_user.id))
 def run(message: Message):
     chat_id = message.chat.id
     user_message = message.text
 
     if user_message == START_MARKUP_BTN_1:
-        print("START_MARKUP_BTN_1")
+        print(START_MARKUP_BTN_1)
+        bot.send_sticker(chat_id, START__BTN_1_STICKER)
+        bot.send_message(chat_id, TEST_PERIOD_MESSAGE)
     elif user_message == START_MARKUP_BTN_2:
         print("START_MARKUP_BTN_2")
         help_handler(message)
