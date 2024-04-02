@@ -9,6 +9,6 @@ else:
     dotenv.load_dotenv()
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")  # https://t.me/bk_alihan_tg_bot
-ADMIN_LIST = json.loads(os.getenv("ADMINS"))
-print(type(ADMIN_LIST))
+ADMIN_LIST = json.loads(os.getenv("ADMIN_LIST"))
+
 

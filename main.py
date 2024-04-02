@@ -157,6 +157,79 @@ def call_rasulka(call):
     bot.send_message(chat_id, ADMIN_MARKUP_BTN_6)
 
 
+def show_admin(message):
+    chat_id = message.chat.id
+    markup = types.InlineKeyboardMarkup()
+    btn_1 = types.InlineKeyboardButton("Админ", url="https://t.me/yarchkk")
+    btn_2 = types.InlineKeyboardButton("Модер", url="https://t.me/yaros_sm")
+    markup.add(btn_1, btn_2)
+    bot.send_message(chat_id, "Наши модеры", reply_markup=markup)
+
+
+def show_faq(message):
+    chat_id = message.chat.id
+    bot.send_message(chat_id, "Вопрос / ответ")
+
+
+def suggest(message):
+    chat_id = message.chat.id
+    bot.send_message(chat_id, "Предложить")
+
+
+def prices(message):
+    chat_id = message.chat.id
+    markup = types.InlineKeyboardMarkup()
+    btn_1 = types.InlineKeyboardButton("call_hard", callback_data="call_hard")
+    btn_2 = types.InlineKeyboardButton("call_medium", callback_data="call_medium")
+    btn_3 = types.InlineKeyboardButton("call_easy", callback_data="call_easy")
+    markup.add(btn_1)
+    markup.add(btn_2)
+    markup.add(btn_3)
+    with open("prices.jpg", "rb") as photo:
+        bot.send_photo(chat_id, photo=photo)
+    bot.send_message(chat_id, "Наши ценники", reply_markup=markup)
+
+
+@bot.callback_query_handler(func=lambda call: call.data == "call_hard")
+def call_hard(call):
+    call_back = call.data
+    message = call.message
+    chat_id = message.chat.id
+    bot.send_message(chat_id, "Вы выбрали call_hard")
+
+
+@bot.callback_query_handler(func=lambda call: call.data == "call_medium")
+def call_medium(call):
+    call_back = call.data
+    message = call.message
+    chat_id = message.chat.id
+    bot.send_message(chat_id, "Вы выбрали call_medium")
+
+
+@bot.callback_query_handler(func=lambda call: call.data == "call_easy")
+def call_easy(call):
+    call_back = call.data
+    message = call.message
+    chat_id = message.chat.id
+    bot.send_message(chat_id, "Вы выбрали call_easy")
+
+
+def show_profile(message):
+    chat_id = message.chat.id
+    markup = types.InlineKeyboardMarkup()
+    btn_1 = types.InlineKeyboardButton("Пополнить", callback_data="popolnit")
+    markup.add(btn_1)
+    bot.send_message(chat_id, "БАЛАНС\nУслуга\nДата", reply_markup=markup)
+
+
+@bot.callback_query_handler(func=lambda call: call.data == "popolnit")
+def popolnit(call):
+    call_back = call.data
+    message = call.message
+    chat_id = message.chat.id
+    bot.send_message(chat_id, "Вы выбрали popolnit")
+
+
 @bot.message_handler(content_types=['text'], func=lambda msg: check_acces_to_command(msg.from_user.id))
 def run(message: Message):
     chat_id = message.chat.id
@@ -171,12 +244,19 @@ def run(message: Message):
         help_handler(message)
     elif user_message == START_MARKUP_BTN_3:
         print("START_MARKUP_BTN_3")
+        show_profile(message)
+    elif user_message == START_MARKUP_BTN_4:
+        print("START_MARKUP_BTN_4")
+        prices(message)
     elif user_message == HELP_MARKUP_BTN_1:
         print("HELP_MARKUP_BTN_1")
+        show_admin(message)
     elif user_message == HELP_MARKUP_BTN_2:
         print("HELP_MARKUP_BTN_2")
+        show_faq(message)
     elif user_message == HELP_MARKUP_BTN_3:
         print("HELP_MARKUP_BTN_3")
+        suggest(message)
     elif user_message == HELP_MARKUP_BTN_4:
         print("HELP_MARKUP_BTN_4")
         start_handler(message)
