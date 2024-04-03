@@ -1,31 +1,10 @@
 from config_data.config import ADMIN_LIST
-from loader import bot
-
-from telebot import types
-from telebot.types import Message
 
 from States.mystates import MyStates
 
-from texts.texts import *
+from funcs.bot_funcs import *
 
 my_state = MyStates()
-
-blocked_users: dict = {}
-blocked_users.setdefault(6554422345, {'acces_to_command': False})
-print(blocked_users)
-
-
-def check_acces_to_command(user_id) -> bool:
-    if check_in_users(user_id) is True:
-        if blocked_users[user_id]['acces_to_command'] is False:
-            return False
-    return True
-
-
-def check_in_users(user_id) -> bool:
-    if user_id in blocked_users:
-        return True
-    return False
 
 
 @bot.message_handler(commands=['start'], func=lambda msg: check_acces_to_command(msg.from_user.id))
@@ -108,17 +87,6 @@ def call_ban(call):
     bot.register_next_step_handler(msg, ban)
 
 
-def ban(message: Message):
-    chat_id = message.chat.id
-    who = message.text
-    print(blocked_users)
-    if int(who) in blocked_users.keys():
-        bot.send_message(chat_id, ALREADY_IN_BAN.format(who=who))
-    else:
-        blocked_users.setdefault(int(who), {'acces_to_command': False})
-        bot.send_message(chat_id, USER_ADDED_IN_BAN.format(who=who))
-
-
 @bot.callback_query_handler(func=lambda call: call.data == "unban")
 def call_unban(call):
     call_back = call.data
@@ -157,45 +125,12 @@ def call_rasulka(call):
     bot.send_message(chat_id, ADMIN_MARKUP_BTN_6)
 
 
-def show_admin(message):
-    chat_id = message.chat.id
-    markup = types.InlineKeyboardMarkup()
-    btn_1 = types.InlineKeyboardButton("Админ", url="https://t.me/yarchkk")
-    btn_2 = types.InlineKeyboardButton("Модер", url="https://t.me/yaros_sm")
-    markup.add(btn_1, btn_2)
-    bot.send_message(chat_id, "Наши модеры", reply_markup=markup)
-
-
-def show_faq(message):
-    chat_id = message.chat.id
-    bot.send_message(chat_id, "Вопрос / ответ")
-
-
-def suggest(message):
-    chat_id = message.chat.id
-    bot.send_message(chat_id, "Предложить")
-
-
-def prices(message):
-    chat_id = message.chat.id
-    markup = types.InlineKeyboardMarkup()
-    btn_1 = types.InlineKeyboardButton("call_hard", callback_data="call_hard")
-    btn_2 = types.InlineKeyboardButton("call_medium", callback_data="call_medium")
-    btn_3 = types.InlineKeyboardButton("call_easy", callback_data="call_easy")
-    markup.add(btn_1)
-    markup.add(btn_2)
-    markup.add(btn_3)
-    with open("prices.jpg", "rb") as photo:
-        bot.send_photo(chat_id, photo=photo)
-    bot.send_message(chat_id, "Наши ценники", reply_markup=markup)
-
-
-@bot.callback_query_handler(func=lambda call: call.data == "call_hard")
+@bot.callback_query_handler(func=lambda call: call.data == "call_premium")
 def call_hard(call):
     call_back = call.data
     message = call.message
     chat_id = message.chat.id
-    bot.send_message(chat_id, "Вы выбрали call_hard")
+    bot.send_message(chat_id, CALL_SUBSCRIBE.format(type_sub="Премиум"))
 
 
 @bot.callback_query_handler(func=lambda call: call.data == "call_medium")
@@ -203,35 +138,31 @@ def call_medium(call):
     call_back = call.data
     message = call.message
     chat_id = message.chat.id
-    bot.send_message(chat_id, "Вы выбрали call_medium")
+    bot.send_message(chat_id, CALL_SUBSCRIBE.format(type_sub="Медиум"))
 
 
-@bot.callback_query_handler(func=lambda call: call.data == "call_easy")
+@bot.callback_query_handler(func=lambda call: call.data == "call_lite")
 def call_easy(call):
     call_back = call.data
     message = call.message
     chat_id = message.chat.id
-    bot.send_message(chat_id, "Вы выбрали call_easy")
+    bot.send_message(chat_id, CALL_SUBSCRIBE.format(type_sub="Лайт"))
 
 
-def show_profile(message):
-    chat_id = message.chat.id
-    markup = types.InlineKeyboardMarkup()
-    btn_1 = types.InlineKeyboardButton("Пополнить", callback_data="popolnit")
-    markup.add(btn_1)
-    bot.send_message(chat_id, "БАЛАНС\nУслуга\nДата", reply_markup=markup)
-
-
-@bot.callback_query_handler(func=lambda call: call.data == "popolnit")
-def popolnit(call):
+@bot.callback_query_handler(func=lambda call: call.data == "top_up")
+def call_top_up_balance(call):
     call_back = call.data
     message = call.message
     chat_id = message.chat.id
-    bot.send_message(chat_id, "Вы выбрали popolnit")
+    markup = types.InlineKeyboardMarkup()
+    btn_1 = types.InlineKeyboardButton("Нажми на меня", url="https://t.me/yarchkk")
+    markup.add(btn_1)
+    bot.send_message(chat_id, "Менеджер", reply_markup=markup)
+    bot.send_message(chat_id, CALL_TOP_UP)
 
 
 @bot.message_handler(content_types=['text'], func=lambda msg: check_acces_to_command(msg.from_user.id))
-def run(message: Message):
+def text_handler(message: Message):
     chat_id = message.chat.id
     user_message = message.text
 
