@@ -6,7 +6,6 @@ from texts.texts import *
 
 blocked_users: dict = {}
 blocked_users.setdefault(6554422345, {'acces_to_command': False})
-print(blocked_users)
 
 
 def check_acces_to_command(user_id) -> bool:
